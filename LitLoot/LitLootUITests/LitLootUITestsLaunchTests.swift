@@ -2,7 +2,7 @@
 //  LitLootUITestsLaunchTests.swift
 //  LitLootUITests
 //
-//  Created by Tyler Lott on 4/9/25.
+//  Created by Tyler Lott on 4/12/25.
 //
 
 import XCTest
@@ -17,6 +17,7 @@ final class LitLootUITestsLaunchTests: XCTestCase {
         continueAfterFailure = false
     }
 
+    @MainActor
     func testLaunch() throws {
         let app = XCUIApplication()
         app.launch()
