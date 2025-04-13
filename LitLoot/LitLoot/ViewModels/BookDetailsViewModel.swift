@@ -24,11 +24,29 @@ final class BookDetailsViewModel: ObservableObject {
     func loadQuiz() async {
         isLoading = true
         errorMessage = nil
+        
         do {
-            quizQuestions = try await quizService.fetchQuizQuestions()
+            quizQuestions = try await quizService.fetchQuizQuestions(for: book)
+        } catch let error as QuizError {
+            errorMessage = error.localizedDescription
         } catch {
-            errorMessage = "Failed to load quiz."
+            errorMessage = "An unexpected error occurred: \(error.localizedDescription)"
         }
+        
         isLoading = false
     }
 }
+
+#if DEBUG
+extension BookDetailsViewModel {
+    static let preview = BookDetailsViewModel(
+        book: Book(
+            id: UUID(),
+            title: "Test Book",
+            author: "Test Author",
+            content: "Test Description"
+        ),
+        quizService: QuizService.mock
+    )
+}
+#endif

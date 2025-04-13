@@ -69,12 +69,6 @@ struct MainTabView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $appState.isInQuiz) {
-            NavigationView {
-                BookQuizView(viewModel: BookQuizViewModel(quizService: QuizService()))
-            }
-            .environmentObject(appState)
-        }
     }
 }
 

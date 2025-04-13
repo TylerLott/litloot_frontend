@@ -20,7 +20,13 @@ struct BookSearchView: View {
                     .padding(.horizontal)
 
                 List(viewModel.filteredBooks) { book in
-                    NavigationLink(destination: BookDetailView(viewModel: BookDetailsViewModel(book: book))) {
+                    NavigationLink(
+                        destination: BookDetailView(
+                            viewModel: BookDetailsViewModel(book: book),
+                            quizViewModel: BookQuizViewModel(book: book)
+                        )
+                        .environmentObject(AppState())
+                    ) {
                         VStack(alignment: .leading) {
                             Text(book.title).font(.headline)
                             Text(book.author).font(.subheadline).foregroundColor(.gray)

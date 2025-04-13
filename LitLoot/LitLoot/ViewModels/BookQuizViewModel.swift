@@ -14,13 +14,17 @@ class BookQuizViewModel: ObservableObject {
     @Published var score: Int = 0
     @Published var isLoading: Bool = false
     @Published var quizComplete: Bool = false
+    @Published var error: QuizError?
+    @Published var showError: Bool = false
 
     private(set) var allQuestions: [QuizQuestion] = []
     @Published var currentIndex = 0
 
     private let quizService: QuizServiceProtocol
+    private let book: Book
 
-    init(quizService: QuizServiceProtocol = QuizService()) {
+    init(book: Book, quizService: QuizServiceProtocol = QuizService()) {
+        self.book = book
         self.quizService = quizService
     }
 
@@ -29,11 +33,23 @@ class BookQuizViewModel: ObservableObject {
 
     func startQuiz() async {
         isLoading = true
-        allQuestions = try! await quizService.fetchQuizQuestions()
-        score = 0
-        currentIndex = 0
-        quizComplete = false
-        currentQuestion = allQuestions.first
+        error = nil
+        showError = false
+        
+        do {
+            allQuestions = try await quizService.fetchQuizQuestions(for: book)
+            score = 0
+            currentIndex = 0
+            quizComplete = false
+            currentQuestion = allQuestions.first
+        } catch let error as QuizError {
+            self.error = error
+            showError = true
+        } catch {
+            self.error = .networkError(error)
+            showError = true
+        }
+        
         isLoading = false
     }
 

@@ -11,26 +11,28 @@ struct AIChatView: View {
     @StateObject private var viewModel = AIChatViewModel()
 
     var body: some View {
-        VStack {
-            ChatScrollView(messages: viewModel.messages, isTyping: viewModel.isTyping, animatingMessageID: viewModel.animatingMessageID)
+        NavigationView {
+            VStack {
+                ChatScrollView(messages: viewModel.messages, isTyping: viewModel.isTyping, animatingMessageID: viewModel.animatingMessageID)
 
-            Divider()
+                Divider()
 
-            ChatInputBar(
-                inputText: $viewModel.inputText,
-                isInputEmpty: viewModel.inputText.isEmpty,
-                onSend: viewModel.sendMessage
-            )
+                ChatInputBar(
+                    inputText: $viewModel.inputText,
+                    isInputEmpty: viewModel.inputText.isEmpty,
+                    onSend: viewModel.sendMessage
+                )
+            }
+            .navigationTitle("AI Chat")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationTitle("AI Chat")
-        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
 // MARK: - Chat ScrollView
 
 struct ChatScrollView: View {
-    let messages: [ChatMessage]
+    let messages: [Message]
     let isTyping: Bool
     let animatingMessageID: UUID?
 
@@ -39,8 +41,16 @@ struct ChatScrollView: View {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 12) {
                     ForEach(messages) { message in
-                        ChatBubble(message: message, isAnimating: message.id == animatingMessageID)
-                            .id(message.id)
+                        VStack(alignment: .leading, spacing: 8) {
+                            ChatBubble(message: message, isAnimating: message.id == animatingMessageID)
+                            
+                            if let books = message.books, !books.isEmpty {
+                                ForEach(books) { book in
+                                    BookCard(book: book)
+                                }
+                            }
+                        }
+                        .id(message.id)
                     }
 
                     if isTyping {
@@ -70,10 +80,42 @@ struct ChatScrollView: View {
     }
 }
 
+// MARK: - Book Card
+
+struct BookCard: View {
+    let book: Book
+    @EnvironmentObject var appState: AppState
+    
+    var body: some View {
+        NavigationLink(destination: BookDetailView(
+            viewModel: BookDetailsViewModel(book: book),
+            quizViewModel: BookQuizViewModel(book: book)
+        )) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(book.title)
+                    .font(.headline)
+                
+                Text(book.author)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                
+                Text(book.content)
+                    .font(.body)
+                    .lineLimit(3)
+            }
+            .padding()
+            .background(Color(.systemGray6))
+            .cornerRadius(12)
+            .padding(.horizontal)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
 // MARK: - Chat Bubble
 
 struct ChatBubble: View {
-    let message: ChatMessage
+    let message: Message
     let isAnimating: Bool
     @State private var animatedText: String = ""
 

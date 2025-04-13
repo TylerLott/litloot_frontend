@@ -9,7 +9,8 @@ import SwiftUI
 
 struct BookQuizView: View {
     @EnvironmentObject var appState: AppState
-    @StateObject var viewModel: BookQuizViewModel
+    @ObservedObject var viewModel: BookQuizViewModel
+    @Environment(\.dismiss) private var dismiss
 
     @State private var animateAnswer = false
     @State private var showExitAlert = false
@@ -21,7 +22,7 @@ struct BookQuizView: View {
         VStack {
             if viewModel.quizComplete {
                 QuizResultView(score: viewModel.score, totalQuestions: viewModel.totalQuestions) {
-                    appState.isInQuiz = false
+                    dismiss()
                 }
             } else if viewModel.isLoading {
                 ProgressView("Loading question...")
@@ -57,11 +58,11 @@ struct BookQuizView: View {
                             }
                             .alert("Exit Quiz?", isPresented: $showExitAlert) {
                                 Button("Exit", role: .destructive) {
-                                    appState.isInQuiz = false
+                                    dismiss()
                                 }
                                 Button("Cancel", role: .cancel) { }
                             } message: {
-                                Text("You won’t be able to take the quiz again today.")
+                                Text("You won't be able to take the quiz again today.")
                             }
                         }
 
@@ -141,9 +142,6 @@ struct BookQuizView: View {
         }
         .navigationTitle("Book Quiz")
         .navigationBarBackButtonHidden(true)
-        .task {
-            await viewModel.startQuiz()
-        }
     }
 
     // MARK: - Animation Helpers
@@ -165,7 +163,7 @@ struct BookQuizView: View {
 
 #Preview {
     NavigationView {
-        BookQuizView(viewModel: BookQuizViewModel(quizService: MockQuizService()))
+        BookQuizView(viewModel: BookQuizViewModel(book: Book.example))
             .environmentObject(AppState())
     }
 }

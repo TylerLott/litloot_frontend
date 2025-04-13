@@ -8,37 +8,59 @@
 import SwiftUI
 
 struct QuizActionButton: View {
-    @ObservedObject var viewModel: BookDetailsViewModel
-    @EnvironmentObject var appState: AppState
-
+    @ObservedObject var quizViewModel: BookQuizViewModel
+    @Binding var showQuiz: Bool
+    
     var body: some View {
-        Group {
-            if viewModel.isLoading {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 50)
-
-                    ProgressView()
-                }
-            } else {
-                Button(action: {
-                    Task {
-                        await viewModel.loadQuiz()
-                        appState.activeQuizQuestions = viewModel.quizQuestions
-                        appState.isInQuiz = true
+        VStack(spacing: 8) {
+            Button(action: {
+                Task {
+                    await quizViewModel.startQuiz()
+                    if !quizViewModel.allQuestions.isEmpty {
+                        showQuiz = true
                     }
-                }) {
-                    Text("Take Quiz")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color.blue)
-                        .cornerRadius(10)
                 }
+            }) {
+                HStack {
+                    if quizViewModel.isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    } else {
+                        Text("Take Quiz")
+                            .font(.headline)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+            }
+            .disabled(quizViewModel.isLoading)
+            
+            if let error = quizViewModel.error {
+                Text(error.localizedDescription)
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
             }
         }
-        .padding(.top)
+        .alert("Quiz Error", isPresented: $quizViewModel.showError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(quizViewModel.error?.localizedDescription ?? "An unknown error occurred")
+        }
     }
 }
+
+#if DEBUG
+struct QuizActionButton_Previews: PreviewProvider {
+    static var previews: some View {
+        QuizActionButton(
+            quizViewModel: BookQuizViewModel(book: Book.example),
+            showQuiz: .constant(false)
+        )
+    }
+}
+#endif

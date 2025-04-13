@@ -63,7 +63,8 @@ struct DetailsButton: View {
     var body: some View {
         NavigationLink(
             destination: BookDetailView(
-                viewModel: BookDetailsViewModel(book: book)
+                viewModel: BookDetailsViewModel(book: book),
+                quizViewModel: BookQuizViewModel(book: book)
             )
             .environmentObject(AppState())
         ) {

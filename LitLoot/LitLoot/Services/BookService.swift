@@ -15,7 +15,7 @@ class BookService: BookServiceProtocol {
     func fetchBooks() async throws -> [Book] {
         // Replace with real API call later
         return [
-            Book(id: UUID(), title: "1984", author: "George Orwell", description: "A dystopian future of surveillance.")
+            Book(id: UUID(), title: "1984", author: "George Orwell", content: "A dystopian future of surveillance.")
         ]
     }
     
